@@ -45,16 +45,14 @@ function Register() {
         "http://localhost:8732/api/users/register",
         formData
       );
-      toast.success(response.data?.message || "Registration successful");
-
-      // Redirect based on role
-      if (formData.role === "ADMIN") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/user/dashboard");
-      }
+      toast.success(response.data?.message || "Registration successful! Redirecting to login...");
+      
+      // Add a delay before redirection to show the success message
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000); // 2 second delay
     } catch (error) {
-      toast.error(error.response?.data?.message || "Registration failed");
+      toast.error(error.response?.data?.message || "Registration failed. Please try again.");
     }
   };
 

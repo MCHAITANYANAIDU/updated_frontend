@@ -89,7 +89,7 @@ function App() {
         <Route path="/faq" element={<FAQ />} />
       </Routes>
       <FooterSection />
-      <ToastContainer />
+      <ToastContainer autoClose={2000} />
     </Router>
   );
 }

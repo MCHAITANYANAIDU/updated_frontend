@@ -62,13 +62,29 @@ const ChartsSection = ({
   const rejected = statusData.find((s) => s.name === "Rejected")?.value || 0;
   const approvalRate = total ? Math.round((totalApproved / total) * 100) : 0;
 
-  // Admin-specific: Top 3 Loan Purposes
+  // Calculate total loan amount
+  const totalLoanAmount = applications.reduce((sum, app) => sum + Number(app.loanAmount || 0), 0);
+  
+  // Calculate average loan amount
+  const averageLoanAmount = total ? Math.round(totalLoanAmount / total) : 0;
+
+  // Admin-specific: Top 3 Loan Purposes with percentages
   const topPurposes = getPurposeData()
     .sort((a, b) => b.amount - a.amount)
-    .slice(0, 3);
+    .slice(0, 3)
+    .map(purpose => ({
+      ...purpose,
+      percentage: Math.round((purpose.amount / totalLoanAmount) * 100)
+    }));
 
-  // User-specific: Personalized greeting
+  // User-specific: Personalized greeting and loan summary
   const greeting = userName ? `Welcome, ${userName}!` : "Welcome!";
+  const userLoanSummary = {
+    totalAmount: totalLoanAmount,
+    averageAmount: averageLoanAmount,
+    approvalRate,
+    totalApplications: total
+  };
 
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -96,10 +112,13 @@ const ChartsSection = ({
                 <AttachMoneyIcon color="primary" fontSize="large" />
                 <Box>
                   <Typography variant="subtitle2" fontWeight={600}>
-                    Disbursed
+                    Total Loan Amount
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
-                    {disbursed}
+                    ₹{totalLoanAmount.toLocaleString()}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Average: ₹{averageLoanAmount.toLocaleString()}
                   </Typography>
                 </Box>
               </Paper>
@@ -112,6 +131,9 @@ const ChartsSection = ({
                   <Typography variant="h5" fontWeight={700}>
                     {pending}
                   </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {Math.round((pending / total) * 100)}% of total
+                  </Typography>
                 </Box>
               </Paper>
               <Paper sx={statCardSx(chartTheme.palette.error.main, chartTheme)}>
@@ -122,6 +144,9 @@ const ChartsSection = ({
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
                     {rejected}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {Math.round((rejected / total) * 100)}% of total
                   </Typography>
                 </Box>
               </Paper>
@@ -223,7 +248,12 @@ const ChartsSection = ({
                   />
                   <XAxis dataKey="purpose" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip 
+                    formatter={(value, name, props) => [
+                      `₹${value.toLocaleString()}`,
+                      `${props.payload.percentage}% of total`
+                    ]}
+                  />
                   <Legend />
                   <Bar
                     dataKey="amount"
@@ -301,16 +331,22 @@ const ChartsSection = ({
                   <Typography variant="h5" fontWeight={700}>
                     {totalApproved}
                   </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {approvedPendingDisbursal} pending disbursal
+                  </Typography>
                 </Box>
               </Paper>
               <Paper sx={statCardSx(chartTheme.palette.primary.main, chartTheme)}>
                 <AttachMoneyIcon color="primary" fontSize="large" />
                 <Box>
                   <Typography variant="subtitle2" fontWeight={600}>
-                    Disbursed
+                    Total Loan Amount
                   </Typography>
                   <Typography variant="h5" fontWeight={700}>
-                    {disbursed}
+                    ₹{totalLoanAmount.toLocaleString()}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Average: ₹{averageLoanAmount.toLocaleString()}
                   </Typography>
                 </Box>
               </Paper>
@@ -412,7 +448,9 @@ const ChartsSection = ({
                   />
                   <XAxis dataKey="purpose" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip 
+                    formatter={(value) => `₹${value.toLocaleString()}`}
+                  />
                   <Legend />
                   <Bar
                     dataKey="amount"
